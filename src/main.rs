@@ -15,12 +15,17 @@ fn main() {
         //for that I would have done conversion too cumbersome so sticked with &str
         let echo_command = "echo ";
         let type_command="type ";
+        let type_impl=vec!["echo","type","exit"];
         if input.trim().starts_with(echo_command){
             let (first,last)=input.trim().split_at(5);
             println!("{}",last);
         }else if input.trim().starts_with(type_command){
              let (first,last)=input.trim().split_at(5);
-             println!("{} is a shell builtin",last);
+             if type_impl.iter().any(|e| *e==last){
+                println!("{}: is a shell builtin",last);
+             }else{
+                println!("{}: is not a shell builtin",last);
+             }
         }
         
         else{ println!("{}: command not found\r\n", input.trim());}
