@@ -29,8 +29,8 @@ func main() {
 	// fmt.Print(resp)
 
 	// initializing the target struct
-	var blockData blockDetails
+	var problem problemStat
 	decoder := json.NewDecoder(resp.Body)
-	err = decoder.Decode(&blockData)
-	fmt.Print(blockData)
+	err = decoder.Decode(&problem)
+	fmt.Print(problem)
 }
