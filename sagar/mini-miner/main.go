@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"github.com/ssd-81/temporal-synthesis/sagar/mini-miner/internal/hash"
 )
 
 type blockDetails struct {
@@ -72,5 +73,7 @@ func main() {
 	defer resp.Body.Close()
 	fmt.Println(resp)
 	fmt.Println("successly sent post request")
+
+	hash.Test("nentaro1")
 
 }
