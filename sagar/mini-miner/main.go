@@ -9,8 +9,8 @@ import (
 )
 
 type blockDetails struct {
-	Nonce interface{}     `json:"nonce"`
-	Data  [][]interface{} `json:"data"`
+	Nonce any     `json:"nonce"`
+	Data  [][]any `json:"data"`
 }
 
 type problemStat struct {
@@ -23,6 +23,11 @@ type Post struct {
 	Nonce string `json:"nonce"`
 }
 
+type hashBlock struct {
+	Data [][]any `json:"data"`
+	Nonce uint `json:"nonce"`
+}
+
 func main() {
 
 	// getting the problem statement
@@ -31,7 +36,7 @@ func main() {
 	url := "https://hackattic.com/challenges/mini_miner/problem?access_token=aaa699dde38ea86a"
 	resp, err := http.Get(url)
 	if err != nil {
-		fmt.Printf("error while getting response from the url: ", url)
+		fmt.Printf("error while getting response from the url: %v", url)
 	}
 	defer resp.Body.Close()
 	// fmt.Print(resp)
@@ -74,6 +79,18 @@ func main() {
 	fmt.Println(resp)
 	fmt.Println("successly sent post request")
 
-	hash.Test("nentaro1")
+	// creating the json serialized data for hashing
+
+	tempBlock := hashBlock{
+		Data: problem.Block.Data,
+		Nonce: 0,
+	}
+	jsonSerializedData , err := json.Marshal(tempBlock)
+	if err != nil {
+		fmt.Println("error while converting go struct to JSON: ", err)
+		return 
+	}
+
+	hash.Test(jsonSerializedData)
 
 }

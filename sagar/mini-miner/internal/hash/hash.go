@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-func Test(data string) {
+func Test(data []byte) {
 	hasher := sha256.New()
 	hasher.Write([]byte(data))
 	hashedData := hasher.Sum(nil)
@@ -15,3 +15,4 @@ func Test(data string) {
 	fmt.Println("SHA-256 Hash:", hexHash)
 
 }
+
