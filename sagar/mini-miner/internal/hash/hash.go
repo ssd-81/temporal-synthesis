@@ -6,13 +6,22 @@ import (
 	"fmt"
 )
 
-func Test(data []byte) {
+func Test(data []byte) string {
 	hasher := sha256.New()
 	hasher.Write([]byte(data))
 	hashedData := hasher.Sum(nil)
 	hexHash := hex.EncodeToString(hashedData)
 
 	fmt.Println("SHA-256 Hash:", hexHash)
+	return hexHash
 
 }
 
+
+func CheckSolution(j []byte, diff string) bool {
+	temp := Test(j)
+	if temp[0:len(diff)] == diff {
+		return true
+	}
+	return false 
+}

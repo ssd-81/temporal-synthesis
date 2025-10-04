@@ -20,7 +20,7 @@ type problemStat struct {
 
 // struct for sending json payload with POST
 type Post struct {
-	Nonce string `json:"nonce"`
+	Nonce uint `json:"nonce"`
 }
 
 type hashBlock struct {
@@ -48,14 +48,39 @@ func main() {
 	if err != nil {
 		fmt.Println("error while decoding the response data: ", err)
 	}
-	// fmt.Print(problem)
 
-	// sending test post request
-	postData := Post{
-		Nonce: "123232223",
+
+	// finding the solution nonce 
+	tempBlock := hashBlock{
+		Data: problem.Block.Data,
+		Nonce: 0,
+	}
+	jsonSerializedData , err := json.Marshal(tempBlock)
+	if err != nil {
+		fmt.Println("error while converting go struct to JSON: ", err)
+		return 
+	}
+	diff := ""
+	for i := 0 ; i < int(problem.Difficulty); i++ {
+		diff += "0"
+	}
+	for {
+		if x := hash.CheckSolution(jsonSerializedData, diff); x {
+			fmt.Println("found it")
+			break
+		}
+		fmt.Println("no match")
+	}
+
+	hash.Test(jsonSerializedData)
+
+
+	// sending the solution to required endpoint 
+	solutionNonce := Post{
+		Nonce: 0,
 	}
 	postUrl := "https://hackattic.com/challenges/mini_miner/solve?access_token=aaa699dde38ea86a"
-	jsonPayload, err := json.Marshal(postData)
+	jsonPayload, err := json.Marshal(solutionNonce)
 	if err != nil {
 		fmt.Println("Error marshalling JSON:", err)
 		return
@@ -81,16 +106,6 @@ func main() {
 
 	// creating the json serialized data for hashing
 
-	tempBlock := hashBlock{
-		Data: problem.Block.Data,
-		Nonce: 0,
-	}
-	jsonSerializedData , err := json.Marshal(tempBlock)
-	if err != nil {
-		fmt.Println("error while converting go struct to JSON: ", err)
-		return 
-	}
-
-	hash.Test(jsonSerializedData)
+	
 
 }
