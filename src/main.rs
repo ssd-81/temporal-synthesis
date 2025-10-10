@@ -7,11 +7,11 @@ mod shell;
 fn main() {
     loop {
         // let exit = "exit 0".to_string();
-        print!("$ ");
+        print!("> ");
         io::stdout().flush().unwrap();
         let mut input = String::new();
         io::stdin().read_line(&mut input).unwrap();
-        let mut pure_input=input.trim();
+        let pure_input=input.trim();
         if input.is_empty(){
             continue;
         }

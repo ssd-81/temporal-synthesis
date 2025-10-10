@@ -1,9 +1,11 @@
 use std::process;
 use super::external::find_path;
+use std::env;
 pub enum BuiltInCommand{
   Exit(i32),
   Echo(String),
   Type(String),
+  Pwd,
 }
 pub fn handle_builtins(cmd:BuiltInCommand)->Result<(),String>{
     match cmd{
@@ -25,6 +27,11 @@ pub fn handle_builtins(cmd:BuiltInCommand)->Result<(),String>{
           }else{
             Err(format!("{}:not found",cmd))
           }
+      }
+      BuiltInCommand::Pwd=>{
+        let current_path=env::current_dir().unwrap();
+        println!("{}",current_path.display());
+        Ok(())
       }
     }
 }
