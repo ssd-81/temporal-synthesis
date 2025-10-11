@@ -28,6 +28,9 @@ pub fn parse(input:&str)->Option<CommandType>{
         "pwd"=>{
           Some(CommandType::BuiltIn(BuiltInCommand::Pwd))
         }
+        "cd"=>{
+          Some(CommandType::BuiltIn(BuiltInCommand::Cd(inputs[1].to_string())))
+        }
         ext=>{
           Some(CommandType::External(ExternalCommand{
             program:ext.to_string(),

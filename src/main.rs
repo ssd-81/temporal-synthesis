@@ -5,6 +5,7 @@ use std::io::{self, Write};
 // use std::path::Path;
 mod shell;
 fn main() {
+    println!("----Welcome to Sarvil Shell----");
     loop {
         // let exit = "exit 0".to_string();
         print!("> ");
