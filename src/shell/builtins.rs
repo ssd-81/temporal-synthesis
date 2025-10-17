@@ -2,12 +2,15 @@ use std::process;
 use super::external::find_path;
 use std::env;
 use std::path::Path;
+use std::fs;
+use std::io::ErrorKind;
 pub enum BuiltInCommand{
   Exit(i32),
   Echo(String),
   Type(String),
   Pwd,
   Cd(String),
+  Cat(Vec<String>),
 }
 pub fn handle_builtins(cmd:BuiltInCommand)->Result<(),String>{
     match cmd{
@@ -19,7 +22,7 @@ pub fn handle_builtins(cmd:BuiltInCommand)->Result<(),String>{
         Ok(())
       }
       BuiltInCommand::Type(cmd)=>{
-          let builtins=vec!["type","echo","exit"];
+          let builtins=vec!["type","echo","exit","cd","pwd"];
           if builtins.contains(&cmd.as_str()){
             println!("{} is a shell builtin",cmd);
             Ok(())
@@ -53,6 +56,22 @@ pub fn handle_builtins(cmd:BuiltInCommand)->Result<(),String>{
           }else{
             Err(format!("cd: {:?}: No such file or directory",dest_path))
           }
+      }
+      BuiltInCommand::Cat(displays)=>{
+          for display in displays{
+            match fs::read_to_string(display){
+              Ok(contents)=>{
+                println!("{}",contents);
+              },
+              Err(e)=>match e.kind(){
+                ErrorKind::NotFound=>{
+                  eprintln!("No such file or directory");
+                },
+                 _ => eprintln!("Error: {}", e),
+              },
+            }
+          }
+          Ok(())
       }
     }
 }

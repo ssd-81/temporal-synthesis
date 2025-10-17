@@ -31,6 +31,9 @@ pub fn parse(input:&str)->Option<CommandType>{
         "cd"=>{
           Some(CommandType::BuiltIn(BuiltInCommand::Cd(inputs[1].to_string())))
         }
+        "cat"=>{
+          Some(CommandType::BuiltIn(BuiltInCommand::Cat(inputs[1..].iter().map(|s| s.to_string()).collect())))
+        }
         ext=>{
           Some(CommandType::External(ExternalCommand{
             program:ext.to_string(),
