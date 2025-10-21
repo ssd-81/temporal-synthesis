@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"github.com/ssd-81/temporal-synthesis/sagar/mini-miner/internal/hash"
 )
 
 type blockDetails struct {
@@ -24,8 +23,8 @@ type Post struct {
 }
 
 type hashBlock struct {
-	Data [][]any `json:"data"`
-	Nonce uint `json:"nonce"`
+	Data  [][]any `json:"data"`
+	Nonce uint    `json:"nonce"`
 }
 
 func main() {
@@ -50,32 +49,47 @@ func main() {
 	}
 
 
-	// finding the solution nonce 
-	tempBlock := hashBlock{
-		Data: problem.Block.Data,
-		Nonce: 0,
-	}
-	jsonSerializedData , err := json.Marshal(tempBlock)
-	if err != nil {
-		fmt.Println("error while converting go struct to JSON: ", err)
-		return 
-	}
-	diff := ""
-	for i := 0 ; i < int(problem.Difficulty); i++ {
-		diff += "0"
-	}
-	for {
-		if x := hash.CheckSolution(jsonSerializedData, diff); x {
-			fmt.Println("found it")
-			break
-		}
-		fmt.Println("no match")
-	}
 
-	hash.Test(jsonSerializedData)
+	// finding the solution nonce
+
+	// generating the difficulty prefix
+	// diff := ""
+	// for i := 0; i < int(problem.Difficulty); i++ {
+	// 	diff += "0"
+	// }
+	// fmt.Println("difficulty: ", diff)
+	// tempBlock := hashBlock{
+	// 	Data:  problem.Block.Data,
+	// 	Nonce: 0,
+	// }
+
+	// brute forcing to find the nonce
+	// need to utilize all cores; let's introduce multithreading
+
+	// totalCores := runtime.NumCPU()
+	// initilizing a worker group to work in sync; if one worker finds the solution
+	// we immediately stop the work
+	// var wg sync.WaitGroup
+
+	// this is only utilizing a single core; will need a separate function to parallize this
+	// \/
+	// for {
+	// 	jsonSerializedData, err := json.Marshal(tempBlock)
+	// 	if err != nil {
+	// 		fmt.Println("error while converting go struct to JSON: ", err)
+	// 		return
+	// 	}
+	// 	if x := hash.CheckSolution(jsonSerializedData, diff); x {
+	// 		fmt.Println("found it")
+	// 		break
+	// 	}
+	// 	fmt.Println("no match")
+	// 	tempBlock.Nonce += 1
+	// }
 
 
-	// sending the solution to required endpoint 
+
+	// sending the solution to required endpoint
 	solutionNonce := Post{
 		Nonce: 0,
 	}
@@ -103,9 +117,5 @@ func main() {
 	defer resp.Body.Close()
 	fmt.Println(resp)
 	fmt.Println("successly sent post request")
-
-	// creating the json serialized data for hashing
-
-	
 
 }
