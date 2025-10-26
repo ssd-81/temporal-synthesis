@@ -22,4 +22,10 @@ Submission is made to
 - the current issue is that I have setup the basic mining mechanism, but it is not really working out because of computational inefficiency. I need to figure out a way to utilize all the cores for the algorithm to run effectively. 
 - introducing concurrency 
     - need to understand how to initilize new threads with task by creating a thread pool (or something)
-    
+- putting concurrency on hold
+    - reason: the internal packages are not even able to handle easier hashes; so likely there is a flaw in the hash package (there is just method ; CheckSolution)
+    - did ask gemini to check for the hash function; it said it was extremely inefficient due to hex encoding; first I will try to fix it and then do the research why it is so inefficient. 
+    - ideas to explore : masking 
+    - gained a bit of clarity about how low level representation works ; uint8 is a 8 bit unsigned integer
+    so it can store values from 0-255
+    - 

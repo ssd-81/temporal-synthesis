@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sync"
+
+	"github.com/ssd-81/temporal-synthesis/sagar/mini-miner/internal/hash"
 )
 
 type blockDetails struct {
@@ -48,46 +51,42 @@ func main() {
 		fmt.Println("error while decoding the response data: ", err)
 	}
 
-
-
 	// finding the solution nonce
 
 	// generating the difficulty prefix
-	// diff := ""
+	var diff uint8 = problem.Difficulty
 	// for i := 0; i < int(problem.Difficulty); i++ {
 	// 	diff += "0"
 	// }
-	// fmt.Println("difficulty: ", diff)
-	// tempBlock := hashBlock{
-	// 	Data:  problem.Block.Data,
-	// 	Nonce: 0,
-	// }
+	fmt.Println("difficulty: ", diff)
+	tempBlock := hashBlock{
+		Data:  problem.Block.Data,
+		Nonce: 0,
+	}
 
 	// brute forcing to find the nonce
 	// need to utilize all cores; let's introduce multithreading
 
-	// totalCores := runtime.NumCPU()
+	// totalCores := runtime.NumCPU()  // need to remove comment eventually
 	// initilizing a worker group to work in sync; if one worker finds the solution
 	// we immediately stop the work
-	// var wg sync.WaitGroup
+	// var wg sync.WaitGroup // need to remove comment eventually
 
 	// this is only utilizing a single core; will need a separate function to parallize this
 	// \/
-	// for {
-	// 	jsonSerializedData, err := json.Marshal(tempBlock)
-	// 	if err != nil {
-	// 		fmt.Println("error while converting go struct to JSON: ", err)
-	// 		return
-	// 	}
-	// 	if x := hash.CheckSolution(jsonSerializedData, diff); x {
-	// 		fmt.Println("found it")
-	// 		break
-	// 	}
-	// 	fmt.Println("no match")
-	// 	tempBlock.Nonce += 1
-	// }
-
-
+	for {
+		jsonSerializedData, err := json.Marshal(tempBlock)
+		if err != nil {
+			fmt.Println("error while converting go struct to JSON: ", err)
+			return
+		}
+		if x := hash.CheckSolution(jsonSerializedData, diff); x {
+			fmt.Println("found it")
+			break
+		}
+		fmt.Println("no match")
+		tempBlock.Nonce += 1
+	}
 
 	// sending the solution to required endpoint
 	solutionNonce := Post{
@@ -118,4 +117,45 @@ func main() {
 	fmt.Println(resp)
 	fmt.Println("successly sent post request")
 
+}
+
+func miner(startIndex uint, stepSize uint, data [][]any, initialNonce any, targetPrefix string, foundCh chan uint, stopMining chan struct{}, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	// starting nonce for specific goroutine
+	nonce := startIndex
+
+	// Loop until a solution is found or the stop signal is received
+	for {
+		select {
+		case <-stopMining:
+			// Another goroutine found the solution; exit immediately.
+			return
+		default:
+		}
+
+		tempBlock := hashBlock{
+			Data:  data,
+			Nonce: nonce,
+		}
+
+		jsonSerializedData, err := json.Marshal(tempBlock)
+		if err != nil {
+			// Handle error, maybe log and return
+			return
+		}
+
+		if hash.CheckSolution(jsonSerializedData, targetPrefix) {
+			select {
+			case foundCh <- nonce:
+				// Solution found and sent. Now wait for the stop signal.
+				return
+			default:
+				// A solution was already found by another goroutine.
+				// Just return and let the main function close the stopMining channel.
+				return
+			}
+		}
+		nonce += stepSize
+	}
 }
