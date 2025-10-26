@@ -28,4 +28,5 @@ Submission is made to
     - ideas to explore : masking 
     - gained a bit of clarity about how low level representation works ; uint8 is a 8 bit unsigned integer
     so it can store values from 0-255
-    - 
+    - managed to get it right; there were minor inconsistencies while json parsing and requests
+    - no need for concurrency. but likely will try to introduce that eventually if I am interested. 

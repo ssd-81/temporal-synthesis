@@ -90,8 +90,9 @@ func main() {
 
 	// sending the solution to required endpoint
 	solutionNonce := Post{
-		Nonce: 0,
+		Nonce: tempBlock.Nonce,
 	}
+	// https://hackattic.com/challenges/mini_miner/problem?access_token=aaa699dde38ea86a
 	postUrl := "https://hackattic.com/challenges/mini_miner/solve?access_token=aaa699dde38ea86a"
 	jsonPayload, err := json.Marshal(solutionNonce)
 	if err != nil {
@@ -119,7 +120,7 @@ func main() {
 
 }
 
-func miner(startIndex uint, stepSize uint, data [][]any, initialNonce any, targetPrefix string, foundCh chan uint, stopMining chan struct{}, wg *sync.WaitGroup) {
+func miner(startIndex uint, stepSize uint, data [][]any, initialNonce any, targetPrefix uint8, foundCh chan uint, stopMining chan struct{}, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	// starting nonce for specific goroutine
