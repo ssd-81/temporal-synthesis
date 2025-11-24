@@ -2,14 +2,13 @@ package main
 
 import (
 	"encoding/base64"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net/http"
 )
 
 type problemSet struct {
-	Data []byte `json:"bytes"`
+	Data string `json:"bytes"`
 }
 
 func main() {
@@ -31,18 +30,22 @@ func main() {
 	}
 	// strContent, err := decoder.String(problem.Data)
 	fmt.Println(problem.Data)
+	rawBytes, err := base64.StdEncoding.DecodeString(problem.Data)
+	fmt.Println("raw bytes", rawBytes)
 
-	// understanding encoding basics
-	var a byte = 'A'
-	fmt.Println(a)
-	var b string = "A"
-	fmt.Println("string: ", b)
+	// strByte := base64.StdEncoding.EncodeToString(problem.Data)
+	// fmt.Println("base64: ", strByte)
 
-	understanding := base64.StdEncoding.EncodeToString(problem.Data)
-	fmt.Println("base64: ", understanding)
+	// deB64, _ := base64.StdEncoding.DecodeString(strByte)
+	// fmt.Println("decoded base64: ", deB64)
 
-	hexStr := hex.EncodeToString(problem.Data)
-	fmt.Println("hex: ", hexStr)
+	// hexStr := hex.EncodeToString(problem.Data)
+	// fmt.Println("hex: ", hexStr)
 
-	
+	// intV := problem.Data[0:4]
+	// fmt.Println("test 0x1", base64.StdEncoding.EncodeToString(intV))
+
+	// posting the solution
+	// POST /challenges/help_me_unpack/solve?access_token=...
+
 }
