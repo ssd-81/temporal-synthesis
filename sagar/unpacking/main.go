@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 )
 
@@ -26,10 +27,6 @@ type solutionPaylod struct {
 	FloatVal        float32 `json:"float"`
 	DoubleVal       float64 `json:"double"`
 	BigEndianDouble float64 `json:"big_endian_double"`
-}
-
-type feedback struct {
-	
 }
 
 func main() {
@@ -111,9 +108,10 @@ func main() {
 	resp, err = client.Do(req)
 	if err != nil {
 		fmt.Println("response could not be sent")
-		return 
+		return
 	}
 	defer resp.Body.Close()
-	fmt.Println(resp.Body)
+	resBytes, _ := io.ReadAll(resp.Body)
+	fmt.Println(string(resBytes))
 
 }
