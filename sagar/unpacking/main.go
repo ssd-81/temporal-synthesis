@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"encoding/base64"
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -9,6 +11,25 @@ import (
 
 type problemSet struct {
 	Data string `json:"bytes"`
+}
+
+type solutionPaylod struct {
+	// int: the signed integer value
+	// uint: the unsigned integer value
+	// short: the decoded short value
+	// float: surprisingly, the float value
+	// double: the double value - shockingly
+	// big_endian_double: you get the idea by now!
+	IntVal          int32   `json:"int"`
+	UintVal         uint32  `json:"uint"`
+	ShortVal        uint16  `json:"short"`
+	FloatVal        float32 `json:"float"`
+	DoubleVal       float64 `json:"double"`
+	BigEndianDouble float64 `json:"big_endian_double"`
+}
+
+type feedback struct {
+	
 }
 
 func main() {
@@ -28,24 +49,71 @@ func main() {
 	if err != nil {
 		fmt.Println("error while decoding the response data")
 	}
-	// strContent, err := decoder.String(problem.Data)
-	fmt.Println(problem.Data)
+
+	// a regular int (signed), to start off
+	// an unsigned int
+	// a short (signed) to make things interesting
+	// a float because floating point is important
+	// a double as well
+	// another double but this time in big endian (network byte order)
+
+	var regInt int32
+	var unsignedInt uint32
+	var shortSig int16
+	var floatVal float32
+	var doubleVal float64
+	var doubleValBigEnd float64
+
 	rawBytes, err := base64.StdEncoding.DecodeString(problem.Data)
+	if err != nil {
+		fmt.Println("error encounterd while decoding provided input")
+		return
+	}
 	fmt.Println("raw bytes", rawBytes)
 
-	// strByte := base64.StdEncoding.EncodeToString(problem.Data)
-	// fmt.Println("base64: ", strByte)
+	buf := bytes.NewReader(rawBytes)
+	err = binary.Read(buf, binary.LittleEndian, &regInt)
+	if err != nil {
+		fmt.Println("error encounterd while parsing binary")
+		return
+	}
+	fmt.Println(regInt)
+	binary.Read(buf, binary.LittleEndian, &unsignedInt)
+	fmt.Println(unsignedInt)
+	binary.Read(buf, binary.LittleEndian, &shortSig)
+	fmt.Println(shortSig)
+	binary.Read(buf, binary.LittleEndian, &floatVal)
+	fmt.Println(floatVal)
+	binary.Read(buf, binary.LittleEndian, &doubleVal)
+	fmt.Println(doubleVal)
+	binary.Read(buf, binary.BigEndian, &doubleValBigEnd)
+	fmt.Println(doubleValBigEnd)
 
-	// deB64, _ := base64.StdEncoding.DecodeString(strByte)
-	// fmt.Println("decoded base64: ", deB64)
-
-	// hexStr := hex.EncodeToString(problem.Data)
-	// fmt.Println("hex: ", hexStr)
-
-	// intV := problem.Data[0:4]
-	// fmt.Println("test 0x1", base64.StdEncoding.EncodeToString(intV))
-
-	// posting the solution
-	// POST /challenges/help_me_unpack/solve?access_token=...
+	sol := solutionPaylod{
+		IntVal:          regInt,
+		UintVal:         unsignedInt,
+		ShortVal:        uint16(shortSig), // why did go compiler auto add uint16
+		FloatVal:        floatVal,
+		DoubleVal:       doubleVal,
+		BigEndianDouble: doubleValBigEnd,
+	}
+	jsonData, err := json.Marshal(sol)
+	if err != nil {
+		// Handle the error
+	}
+	solUrl := "https://hackattic.com/challenges/help_me_unpack/solve?access_token=aaa699dde38ea86a"
+	req, err := http.NewRequest("POST", solUrl, bytes.NewBuffer(jsonData))
+	if err != nil {
+		fmt.Println("request object could not be created")
+		return
+	}
+	client := &http.Client{}
+	resp, err = client.Do(req)
+	if err != nil {
+		fmt.Println("response could not be sent")
+		return 
+	}
+	defer resp.Body.Close()
+	fmt.Println(resp.Body)
 
 }

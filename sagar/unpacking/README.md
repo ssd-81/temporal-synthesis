@@ -18,4 +18,11 @@ The core is pretty simple; access the problem endpoint to grab a base64 encoded 
     - what is encoding and why do we need it ? 
     - can't we simply operate without an encoding? 
     - what is the difference between an encoding and a type? 
+
+- ideas explored
+    - byte order: big endianess and little endianess
+
+- binary.Read
+    - successive read calls update the reader pointer according to the data type used for storage
+    
     
