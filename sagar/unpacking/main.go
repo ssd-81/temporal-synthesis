@@ -23,7 +23,7 @@ type solutionPaylod struct {
 	// big_endian_double: you get the idea by now!
 	IntVal          int32   `json:"int"`
 	UintVal         uint32  `json:"uint"`
-	ShortVal        uint16  `json:"short"`
+	ShortVal        int16   `json:"short"`
 	FloatVal        float32 `json:"float"`
 	DoubleVal       float64 `json:"double"`
 	BigEndianDouble float64 `json:"big_endian_double"`
@@ -33,6 +33,7 @@ func main() {
 
 	// get problem set from: https://hackattic.com/challenges/help_me_unpack/problem?access_token=aaa699dde38ea86a
 	getUrl := "https://hackattic.com/challenges/help_me_unpack/problem?access_token=aaa699dde38ea86a"
+	// problem?access_token=aaa699dde38ea86a
 	resp, err := http.Get(getUrl)
 
 	if err != nil {
@@ -66,7 +67,10 @@ func main() {
 		fmt.Println("error encounterd while decoding provided input")
 		return
 	}
-	fmt.Println("raw bytes", rawBytes)
+
+	// for debugging
+	fmt.Printf("Total bytes: %d\n", len(rawBytes))
+	fmt.Printf("bytes: % x\n", rawBytes)
 
 	buf := bytes.NewReader(rawBytes)
 	err = binary.Read(buf, binary.LittleEndian, &regInt)
@@ -74,29 +78,43 @@ func main() {
 		fmt.Println("error encounterd while parsing binary")
 		return
 	}
+	fmt.Printf("After regInt, position: %d\n", len(rawBytes)-buf.Len())
+
 	fmt.Println(regInt)
+
 	binary.Read(buf, binary.LittleEndian, &unsignedInt)
-	fmt.Println(unsignedInt)
+	fmt.Printf("After unsignedInt, position: %d\n", len(rawBytes)-buf.Len())
+
 	binary.Read(buf, binary.LittleEndian, &shortSig)
-	fmt.Println(shortSig)
+	fmt.Printf("After shortSig, position: %d\n", len(rawBytes)-buf.Len())
+
+	// min memory block = 32 bits = 4 bytes
+	// shortSig => 2 bytes
+	// 2 bytes is padded
+	var padding uint16
+	binary.Read(buf, binary.LittleEndian, &padding)
+
 	binary.Read(buf, binary.LittleEndian, &floatVal)
-	fmt.Println(floatVal)
+	fmt.Printf("After float val , position: %d\n", len(rawBytes)-buf.Len())
+
 	binary.Read(buf, binary.LittleEndian, &doubleVal)
-	fmt.Println(doubleVal)
+	fmt.Printf("After doubleVal, position: %d\n", len(rawBytes)-buf.Len())
+
 	binary.Read(buf, binary.BigEndian, &doubleValBigEnd)
-	fmt.Println(doubleValBigEnd)
+	fmt.Printf("After doubleValBigEnd, position: %d\n", len(rawBytes)-buf.Len())
 
 	sol := solutionPaylod{
 		IntVal:          regInt,
 		UintVal:         unsignedInt,
-		ShortVal:        uint16(shortSig), // why did go compiler auto add uint16
+		ShortVal:        shortSig,
 		FloatVal:        floatVal,
 		DoubleVal:       doubleVal,
 		BigEndianDouble: doubleValBigEnd,
 	}
 	jsonData, err := json.Marshal(sol)
 	if err != nil {
-		// Handle the error
+		fmt.Println(err)
+		return
 	}
 	solUrl := "https://hackattic.com/challenges/help_me_unpack/solve?access_token=aaa699dde38ea86a"
 	req, err := http.NewRequest("POST", solUrl, bytes.NewBuffer(jsonData))

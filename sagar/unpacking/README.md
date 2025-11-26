@@ -24,5 +24,6 @@ The core is pretty simple; access the problem endpoint to grab a base64 encoded 
 
 - binary.Read
     - successive read calls update the reader pointer according to the data type used for storage
-    
-    
+
+- question
+    - why is int16 to uint16 allowed; but not float32 to float64
