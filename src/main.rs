@@ -82,9 +82,7 @@ fn handle_client(mut stream: TcpStream) -> io::Result<()> {
                 buf_reader.read_exact(&mut body_buf)?;
                 // let body=String::from_utf8(body_buf).unwrap();
                 f.write_all(&body_buf);
-                let response = format!(
-                    "HTTP/1.1 201 Created\r\nContent-Length: 0\r\n\r\n"
-                );
+                let response = format!("HTTP/1.1 201 Created\r\nContent-Length: 0\r\n\r\n");
                 stream.write_all(response.as_bytes())
             }?,
             _ => {
@@ -96,12 +94,24 @@ fn handle_client(mut stream: TcpStream) -> io::Result<()> {
     }
     // println!("{:?}",specific_path[1]);
     if specific_path[1].contains("/echo") {
+        //["GET /echo/foo HTTP/1.1", "Host: localhost:4221", "User-Agent: curl/8.13.0", "Accept: */*", "Accept-Encoding: gzip"]
         let parts_path: Vec<_> = specific_path[1].split("/").collect();
         let lenght_returned = parts_path[2].len();
-        let returned_value = format!(
-            "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}",
-            lenght_returned, parts_path[2]
-        );
+        let encoding_came = &http_request[4];
+        let encoding_split: Vec<&str> = encoding_came.split(":").collect();
+        let returned_value=match encoding_split[1].trim() {
+            "gzip" => {
+                 format!(
+                    "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Encoding: gzip\r\nContent-Length: {}\r\n\r\n{}",
+                    lenght_returned, parts_path[2]
+                )            }
+            _ =>{
+                  format!(
+                    "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}",
+                    lenght_returned, parts_path[2]
+                )
+            } 
+        };
         stream.write_all(returned_value.as_bytes());
         return Ok(());
     }
