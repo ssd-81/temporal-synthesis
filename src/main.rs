@@ -99,20 +99,39 @@ fn handle_client(mut stream: TcpStream) -> io::Result<()> {
         let lenght_returned = parts_path[2].len();
         let encoding_came = &http_request[4];
         let encoding_split: Vec<&str> = encoding_came.split(":").collect();
-        let returned_value=match encoding_split[1].trim() {
-            "gzip" => {
-                 format!(
-                    "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Encoding: gzip\r\nContent-Length: {}\r\n\r\n{}",
-                    lenght_returned, parts_path[2]
-                )            }
-            _ =>{
-                  format!(
-                    "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}",
-                    lenght_returned, parts_path[2]
-                )
-            } 
-        };
-        stream.write_all(returned_value.as_bytes());
+        let encodings:Vec<&str>=encoding_split[1].split(",").collect();
+        /* println!("{:?}",encodings);
+        [" gzip", " invalid-encoding-1", " invalid-encoding-2"] */
+        // for encoding in encodings {}
+        // Or if encodings.iter().any(...) {}
+        if encodings.into_iter().any(|x| x.trim().starts_with("gzip")){
+            let returned_response= format!(
+                     "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Encoding: gzip\r\nContent-Length: {}\r\n\r\n{}",
+                     lenght_returned, parts_path[2]
+                 );
+                 stream.write_all(returned_response.as_bytes());
+                 
+        }else{
+            let returned_response= format!(
+                     "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}",
+                     lenght_returned, parts_path[2]
+                 );
+                 stream.write_all(returned_response.as_bytes());
+        }
+        
+        // let returned_value=match encoding_split[1].trim() {
+        //     "gzip" => {
+        //          format!(
+        //             "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Encoding: gzip\r\nContent-Length: {}\r\n\r\n{}",
+        //             lenght_returned, parts_path[2]
+        //         )            }
+        //     _ =>{
+        //           format!(
+        //             "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: {}\r\n\r\n{}",
+        //             lenght_returned, parts_path[2]
+        //         )
+        //     } 
+        // };
         return Ok(());
     }
     // match http_request[0].trim() {
