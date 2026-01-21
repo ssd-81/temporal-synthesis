@@ -33,8 +33,8 @@ type pb struct {
 }
 type sc struct {
 	N       int32 `json:"N"`
-	p       int32 `json:"p"`
-	r       int32 `json:"r"`
+	P       int32 `json:"p"`
+	R       int32 `json:"r"`
 	BufLen  int32    `json:"buflen"`   // intended output length in octets
 	Control int32 `json:"_control"` // not sure what this is
 }
