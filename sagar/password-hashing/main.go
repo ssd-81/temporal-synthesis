@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
@@ -75,6 +76,14 @@ func main() {
 	h.Write([]byte(problem.Password))
 	fmt.Printf("%x", h.Sum(nil))
 
+	// mac := hmac.New(sha256.New, key)
+	// mac.Write(message)
+	// expectedMAC := mac.Sum(nil)
+	// return hmac.Equal(messageMAC, expectedMAC)
+
+	mac := hmac.New(sha256.New, saltByte)
+	mac.Write([]byte(problem.Password))
+
 
 
 
@@ -82,7 +91,7 @@ func main() {
 	// Create JSON data
 	data := solution{
 		Sha256: hex.EncodeToString(h.Sum(nil)),
-		Hmac: hex.EncodeToString(h.Sum(nil)),
+		Hmac: hex.EncodeToString(mac.Sum(nil)),
 		Pbkdf2: hex.EncodeToString(h.Sum(nil)),
 		Scrypt: hex.EncodeToString(h.Sum(nil)),
 	}
