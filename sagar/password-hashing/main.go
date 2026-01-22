@@ -11,6 +11,10 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strconv"
+
+	"golang.org/x/crypto/pbkdf2"
+	"golang.org/x/crypto/scrypt"
 )
 
 // password: the password you'll operate on
@@ -27,7 +31,7 @@ import (
 
 
 type problemStatement struct {
-	Password string `jsong:"password"`
+	Password string `json:"password"`
 	Salt string `json:"salt"`
 	Pbkdf2 struct {
 		Hash string `json:"hash"`
@@ -61,7 +65,7 @@ func main() {
 	body, _ := io.ReadAll(resp.Body)
 	var problem problemStatement
 	json.Unmarshal(body, &problem)
-	// fmt.Print(problem)
+	fmt.Print(problem)
 	// converting salt string into byte 
 	saltByte , err := base64.StdEncoding.DecodeString(problem.Salt)
 	fmt.Println(saltByte)
@@ -85,6 +89,33 @@ func main() {
 	mac.Write([]byte(problem.Password))
 
 
+	// pbkdf2
+	rounds , _ := strconv.Atoi(problem.Pbkdf2.Rounds)
+	// finding hashing algorithm for pbkdf2 in the PS
+	// temp := problem.Pbkdf2.Hash
+	// var pbHash func() hash.Hash
+	// switch problem.Pbkdf2.Hash {
+	// case "sha256":
+	// 	pbHash = sha256.New
+	// case "sha512":
+	// 	pbHash = sha512.New
+	// default:
+	// 	pbHash = sha256.New // fallback
+	// }
+	// fmt.Println(temp)
+
+
+	// dk:= pbkdf2.Key([]byte(problem.Password),saltByte,rounds,32, sha256.New)
+	dk:= pbkdf2.Key(mac.Sum(nil),saltByte,rounds,32, sha256.New)
+
+
+	if err != nil {	
+		fmt.Println("error encountered while deriving key using pbkdf2")
+	}	
+
+	
+	// scrypt
+	sr, _ := scrypt.Key([]byte(problem.Password), saltByte, problem.Scrypt.N, problem.Scrypt.R, problem.Scrypt.P, problem.Scrypt.Buflen)
 
 
 	// sending response 
@@ -92,8 +123,8 @@ func main() {
 	data := solution{
 		Sha256: hex.EncodeToString(h.Sum(nil)),
 		Hmac: hex.EncodeToString(mac.Sum(nil)),
-		Pbkdf2: hex.EncodeToString(h.Sum(nil)),
-		Scrypt: hex.EncodeToString(h.Sum(nil)),
+		Pbkdf2: hex.EncodeToString(dk),
+		Scrypt: hex.EncodeToString(sr),
 	}
 	jsonData, err := json.Marshal(data)
 	if err != nil {
@@ -107,6 +138,7 @@ func main() {
 	}
 	defer resp.Body.Close()
 	resBytes, _ := io.ReadAll(resp.Body)
+	fmt.Println()
 	fmt.Println(">>>>>>>>>", "<<<<<<<<<<<<<")
 	fmt.Println(string(resBytes))
 
