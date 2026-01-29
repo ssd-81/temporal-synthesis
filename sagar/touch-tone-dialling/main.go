@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 )
 
 
@@ -36,6 +37,10 @@ func main() {
 	fmt.Println(problem)
 
 	currDir, err := os.Getwd()
+	fileName := "challenge.wav"
+	fullPath := filepath.Join(currDir, fileName)
+
+	err = DownloadFile(problem.WavUrl, fullPath)
 	if err != nil {
 		fmt.Println("couldn't not get the current working directory")
 		return
