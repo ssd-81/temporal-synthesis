@@ -47,11 +47,7 @@ func main() {
 	}
 	fmt.Println("current working directory: ", currDir)
 	
-	err = DownloadFile(problem.WavUrl, currDir)
-	if err != nil {
-		fmt.Println("file could not be downloaded")
-		return 
-	}
+	
 	
 
 
