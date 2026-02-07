@@ -36,19 +36,44 @@ void remove_whitespace(char *white_text){
 }
 void merge_digits(char *alone_text){
   size_t length=strlen(alone_text);
-  // printf_s("%d",length);
-}
-void identifying_type(char raw_token){
-  if(is_digit(raw_token)){
-    current_token.type=INTEGER;
-    current_token.number_value=raw_token-'0';
-    // printf("type=%d and value=%d\n",current_token.type,current_token.number_value);
-  }else if(is_operator(raw_token)){
-    current_token.type=OPERATOR;
-    current_token.operator_value=raw_token;
-    // printf("type=%d and value=%c\n",current_token.type,current_token.operator_value);
+  int top=0;
+  int i=0;
+  char multi_type[]={};
+  if (is_digit(alone_text[i])){
+    int value=0;
+  while (is_digit(alone_text[i]) ) {
+    value=value*10+(alone_text[i]-'0');
+    i++;
+    }  
+    top++;
+    multi_type[top]=value;
+  }else if (is_operator(alone_text[i])) {
+    top++;
+    multi_type[top]=alone_text[i];
   }else{
-    printf("You are either giving a wrong numberical number or giving a wrong operator. Numbers between 0-9 are only valid where as in operators only + and - are valid");
+    printf("error");
+    exit(-1);
+  }
+}
+
+int identifying_type(char *text,int i){
+  if(is_digit(text[i])){
+    int value=0;
+    while (is_digit(text[i])) {
+    value=value*10+(text[i]-'0');
+    i++;
+    }
+    current_token.type=INTEGER;
+    current_token.number_value=value;
+    return i;
+  }
+  else if (is_operator(text[i])) {
+    current_token.type = OPERATOR;
+    current_token.operator_value = text[i];
+    return i + 1;
+  }
+  else {
+    printf("Invalid character: %c\n", text[i]);
     exit(-1);
   }
   
@@ -57,25 +82,27 @@ int interpreter(char *text){
   // int length=sizeof(*text)/sizeof(text[0]);
   remove_whitespace(text);
   int nums[MAX_CAPACITY]={};
-  int current_number_size=0;
+  int num_count=0;
   char operators[MAX_CAPACITY]={};
-  int current_operator_size=0;
-  merge_digits(text);
+  int op_count=0;
+  bool expect_number = true;
   int length=strlen(text);
-  for(int i=0;i<length-1;i++){//Here -1 is for \n given by fgets
-    identifying_type(text[i]);//Here I need to identify wether the given char is a number or a operator
-    if(i%2==0){
-    parse(INTEGER);  
-    nums[current_number_size]=current_token.number_value;
-    current_number_size++;
-    }else{
-      parse(OPERATOR);
-      operators[current_operator_size]=current_token.operator_value;
-      current_operator_size++;
-    }
+  int i=0;
+  // int identifying_type(char *text, int i);
+  while (i<length && text[i]!='\n') {
+  i=identifying_type(text,i);
+  if(expect_number){
+    parse(INTEGER);
+    nums[num_count++]=current_token.number_value;
+    expect_number=false;
+  }else{
+    parse(OPERATOR);
+    operators[op_count++]=current_token.operator_value;
+    expect_number=true;
+  }
   }
   int result=nums[0];
-  for(int i=0;i<current_number_size;i++){
+  for(int i=0;i<num_count;i++){
     if(operators[i]=='+'){
       result+=nums[i+1];
     }else if(operators[i]=='-'){
