@@ -1,10 +1,8 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 )
 
@@ -40,36 +38,37 @@ func main() {
 	if err != nil {
 		fmt.Println("error encountered while decoding input problem")
 	}
+	fmt.Println(problem.Credentials.User, problem.Credentials.Password)
 
 
 
 	// posting json for trigger
-	triggerUrl := "https://hackattic.com/_/push/" + problem.TriggerToken
-	triggerPayload := TriggerPost{
-		RegistryHost: "fbi.gov",
-	}
+	// triggerUrl := "https://hackattic.com/_/push/" + problem.TriggerToken
+	// triggerPayload := TriggerPost{
+	// 	RegistryHost: "fbi.gov",
+	// }
 
-	jsonTrigger, _ := json.Marshal(triggerPayload)
-	resp, err = http.Post(triggerUrl, "application/json", bytes.NewBuffer(jsonTrigger))
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
+	// jsonTrigger, _ := json.Marshal(triggerPayload)
+	// resp, err = http.Post(triggerUrl, "application/json", bytes.NewBuffer(jsonTrigger))
+	// if err != nil {
+	// 	return
+	// }
+	// defer resp.Body.Close()
 
-	body, _ := io.ReadAll(resp.Body)
-	fmt.Println(string(body))
+	// body, _ := io.ReadAll(resp.Body)
+	// fmt.Println(string(body))
 
 
-	submitUrl := "https://hackattic.com/challenges/dockerized_solutions/solve?access_token=aaa699dde38ea86a"
-	solution := SolutionPost{Secret: "test"}
-	jsonPayload, _ := json.Marshal(solution)
+	// submitUrl := "https://hackattic.com/challenges/dockerized_solutions/solve?access_token=aaa699dde38ea86a"
+	// solution := SolutionPost{Secret: "test"}
+	// jsonPayload, _ := json.Marshal(solution)
 
-	resp, err = http.Post(submitUrl, "application/json", bytes.NewBuffer(jsonPayload))
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
+	// resp, err = http.Post(submitUrl, "application/json", bytes.NewBuffer(jsonPayload))
+	// if err != nil {
+	// 	return
+	// }
+	// defer resp.Body.Close()
 
-	finalBody, _ := io.ReadAll(resp.Body)
-	fmt.Println(string(finalBody))
+	// finalBody, _ := io.ReadAll(resp.Body)
+	// fmt.Println(string(finalBody))
 }
