@@ -1,0 +1,16 @@
+version: 0.1
+
+log:
+  level: debug
+
+http:
+  addr: :5000
+
+auth:
+  htpasswd:
+    realm: registry
+    path: /auth/htpasswd
+
+storage:
+  filesystem:
+    rootdirectory: /var/lib/registry
