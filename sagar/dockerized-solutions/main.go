@@ -45,12 +45,11 @@ func main() {
 	// fmt.Println(string(pretty))
 
 
-	trToken := "b3a23158.a53d.44a4.aa62.f324a91dbc60"
 
 	// posting json for trigger
-	triggerUrl := "https://hackattic.com/_/push/" + trToken
+	triggerUrl := "https://hackattic.com/_/push/" + problem.TriggerToken
 	triggerPayload := TriggerPost{
-		RegistryHost: "https://hackattic-registry-sagar-hackattic-docker-cold-glitter-665.fly.dev/",
+		RegistryHost: "hackattic-registry-sagar-hackattic-docker-cold-glitter-665.fly.dev",
 	}
 
 	jsonTrigger, _ := json.Marshal(triggerPayload)
