@@ -25,6 +25,8 @@ type SolutionPost struct {
 	Secret string `json:"secret"`
 }
 
+
+
 func main() {
 
 	url := "https://hackattic.com/challenges/dockerized_solutions/problem?access_token=aaa699dde38ea86a"
@@ -41,8 +43,12 @@ func main() {
 		fmt.Println("error encountered while decoding input problem")
 	}
 	
-	// pretty, _ := json.MarshalIndent(problem, "", "  ")
-	// fmt.Println(string(pretty))
+	pretty, _ := json.MarshalIndent(problem, "", "  ")
+	fmt.Println(string(pretty))
+
+	fmt.Println("waiting for manual execution: ")
+	fmt.Scanln()
+	
 
 
 
