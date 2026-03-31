@@ -11,7 +11,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"strconv"
 
 	"golang.org/x/crypto/pbkdf2"
 	"golang.org/x/crypto/scrypt"
@@ -29,29 +28,28 @@ import (
 // buflen: intended output length in octets
 // _control: example scrypt calculated for password="rosebud", salt="pepper", N=128, p=8, n=4
 
-
 type problemStatement struct {
 	Password string `json:"password"`
-	Salt string `json:"salt"`
-	Pbkdf2 struct {
-		Hash string `json:"hash"`
-		Rounds string `json:"rounds"`
-	}`json:"pbkdf2"`
+	Salt     string `json:"salt"`
+	Pbkdf2   struct {
+		Hash   string `json:"hash"`
+		Rounds int    `json:"rounds"`
+	} `json:"pbkdf2"`
 	Scrypt struct {
-		N int `json:"N"` 
-		P int `json:"p"`
-		R int `json:"r"`
+		N      int `json:"N"`
+		P      int `json:"p"`
+		R      int `json:"r"`
 		Buflen int `json:"buflen"`
-	}`json:"scrypt"`
-
+	} `json:"scrypt"`
 }
 
 type solution struct {
 	Sha256 string `json:"sha256"`
-	Hmac string `json:"hmac"`
+	Hmac   string `json:"hmac"`
 	Pbkdf2 string `json:"pbkdf2"`
 	Scrypt string `json:"scrypt"`
 }
+
 // get: https://hackattic.com/challenges/password_hashing/problem?access_token=aaa699dde38ea86a
 // send: https://hackattic.com/challenges/password_hashing/solve?access_token=aaa699dde38ea86a
 
@@ -66,12 +64,11 @@ func main() {
 	var problem problemStatement
 	json.Unmarshal(body, &problem)
 	fmt.Print(problem)
-	// converting salt string into byte 
-	saltByte , err := base64.StdEncoding.DecodeString(problem.Salt)
+	// converting salt string into byte
+	saltByte, err := base64.StdEncoding.DecodeString(problem.Salt)
 	fmt.Println(saltByte)
 
-
-	// sample usage of sha256 and similar cryptographic methods 
+	// sample usage of sha256 and similar cryptographic methods
 	// h := sha256.New()
 	// h.Write([]byte("hello world\n"))
 	// fmt.Printf("%x", h.Sum(nil))
@@ -88,53 +85,39 @@ func main() {
 	mac := hmac.New(sha256.New, saltByte)
 	mac.Write([]byte(problem.Password))
 
-
 	// pbkdf2
-	rounds , _ := strconv.Atoi(problem.Pbkdf2.Rounds)
-	// finding hashing algorithm for pbkdf2 in the PS
-	// temp := problem.Pbkdf2.Hash
-	// var pbHash func() hash.Hash
-	// switch problem.Pbkdf2.Hash {
-	// case "sha256":
-	// 	pbHash = sha256.New
-	// case "sha512":
-	// 	pbHash = sha512.New
-	// default:
-	// 	pbHash = sha256.New // fallback
-	// }
-	// fmt.Println(temp)
-
+	// rounds , _ := strconv.Atoi(problem.Pbkdf2.Rounds)
+	// changed Rounds type to integer
+	rounds := problem.Pbkdf2.Rounds
 
 	// dk:= pbkdf2.Key([]byte(problem.Password),saltByte,rounds,32, sha256.New)
-	dk:= pbkdf2.Key(mac.Sum(nil),saltByte,rounds,32, sha256.New)
+	// dk:= pbkdf2.Key(mac.Sum(nil),saltByte,rounds,32, sha256.New)
+	dk := pbkdf2.Key([]byte(problem.Password), saltByte, rounds, 32, sha256.New)
 
-
-	if err != nil {	
+	if err != nil {
 		fmt.Println("error encountered while deriving key using pbkdf2")
-	}	
+	}
 
-	
 	// scrypt
 	sr, _ := scrypt.Key([]byte(problem.Password), saltByte, problem.Scrypt.N, problem.Scrypt.R, problem.Scrypt.P, problem.Scrypt.Buflen)
 
-
-	// sending response 
+	// sending response
 	// Create JSON data
 	data := solution{
 		Sha256: hex.EncodeToString(h.Sum(nil)),
-		Hmac: hex.EncodeToString(mac.Sum(nil)),
+		Hmac:   hex.EncodeToString(mac.Sum(nil)),
 		Pbkdf2: hex.EncodeToString(dk),
 		Scrypt: hex.EncodeToString(sr),
 	}
 	jsonData, err := json.Marshal(data)
 	if err != nil {
-	panic(err)
+		panic(err)
 	}
 
 	// Make POST request with JSON data
 	resp, err = http.Post("https://hackattic.com/challenges/password_hashing/solve?access_token=aaa699dde38ea86a", "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
-	panic(err)
+		panic(err)
 	}
 	defer resp.Body.Close()
 	resBytes, _ := io.ReadAll(resp.Body)
