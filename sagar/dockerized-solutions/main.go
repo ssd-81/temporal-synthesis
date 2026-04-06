@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 )
 
 type problemStat struct {
@@ -25,41 +26,49 @@ type SolutionPost struct {
 	Secret string `json:"secret"`
 }
 
-
+const credsFile = "credentials.json"
 
 func main() {
-
-	url := "https://hackattic.com/challenges/dockerized_solutions/problem?access_token=aaa699dde38ea86a"
-	resp, err := http.Get(url)
-	if err != nil {
-		fmt.Printf("error: %v", err)
-	}
-	defer resp.Body.Close()
-
 	var problem problemStat
-	decoder := json.NewDecoder(resp.Body)
-	err = decoder.Decode(&problem)
-	if err != nil {
-		fmt.Println("error encountered while decoding input problem")
+	url := "https://hackattic.com/challenges/dockerized_solutions/problem?access_token=aaa699dde38ea86a"
+
+	if data, err := os.ReadFile(credsFile); err == nil {
+		json.Unmarshal(data, &problem)
+	} else {
+		resp, err := http.Get(url)
+		if err != nil {
+			fmt.Println("error: Get url")
+			return
+		}
+		defer resp.Body.Close()
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			fmt.Println("error: reading response body")
+			return
+		}
+
+		if err := json.Unmarshal(body, &problem); err != nil {
+			fmt.Println("error: unmarshaling problem")
+			return
+		}
+
+		os.WriteFile(credsFile, body, 0644)
 	}
-	
+
 	pretty, _ := json.MarshalIndent(problem, "", "  ")
 	fmt.Println(string(pretty))
 
 	fmt.Println("waiting for manual execution: ")
 	fmt.Scanln()
-	
 
-
-
-	// posting json for trigger
 	triggerUrl := "https://hackattic.com/_/push/" + problem.TriggerToken
 	triggerPayload := TriggerPost{
 		RegistryHost: "hackattic-registry-sagar-hackattic-docker-cold-glitter-665.fly.dev",
 	}
 
 	jsonTrigger, _ := json.Marshal(triggerPayload)
-	resp, err = http.Post(triggerUrl, "application/json", bytes.NewBuffer(jsonTrigger))
+	resp, err := http.Post(triggerUrl, "application/json", bytes.NewBuffer(jsonTrigger))
 	if err != nil {
 		return
 	}
@@ -67,18 +76,4 @@ func main() {
 
 	body, _ := io.ReadAll(resp.Body)
 	fmt.Println(string(body))
-
-
-	// submitUrl := "https://hackattic.com/challenges/dockerized_solutions/solve?access_token=aaa699dde38ea86a"
-	// solution := SolutionPost{Secret: "test"}
-	// jsonPayload, _ := json.Marshal(solution)
-
-	// resp, err = http.Post(submitUrl, "application/json", bytes.NewBuffer(jsonPayload))
-	// if err != nil {
-	// 	return
-	// }
-	// defer resp.Body.Close()
-
-	// finalBody, _ := io.ReadAll(resp.Body)
-	// fmt.Println(string(finalBody))
 }
