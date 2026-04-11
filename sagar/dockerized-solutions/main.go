@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
+	"os/exec"
 )
 
 type problemStat struct {
@@ -50,6 +52,17 @@ func main() {
 	}
 	prettyProblem, _ := json.MarshalIndent(problem, "", "  ")
 	fmt.Println(string(prettyProblem))
+
+	commandDocker := exec.Command("docker", "login", registryHost,
+		"-u", problem.Credentials.User,
+		"-p", problem.Credentials.Password)
+	commandDocker.Stdout = os.Stdout
+	commandDocker.Stderr = os.Stderr
+	if err := commandDocker.Run(); err != nil {
+		fmt.Println("docker login failed:", err)
+		return
+	}
+	fmt.Println("testing if command succeeded")
 
 	triggerUrl := "https://hackattic.com/_/push/" + problem.TriggerToken
 	triggerPayload := TriggerPost{
